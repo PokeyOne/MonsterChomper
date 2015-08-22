@@ -5,6 +5,8 @@ import java.awt.Point;
 public class Player {
 
 	private int points = 20;
+	private int enemiesDefeated = 0;
+	
 	private Point loc = new Point(0, 0);
 	private Point destLoc = new Point(0, 0);
 	
@@ -66,5 +68,13 @@ public class Player {
 	
 	public void setDestY(int amo){
 		destLoc.y=amo;
+	}
+	
+	public void killedEnemy(){
+		enemiesDefeated++;
+	}
+	
+	public int getEnemiesDefeated(){
+		return enemiesDefeated;
 	}
 }

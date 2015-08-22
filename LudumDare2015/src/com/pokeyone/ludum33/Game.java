@@ -14,6 +14,7 @@ import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
+import com.pokeyone.ludum33.entity.Enemy;
 import com.pokeyone.ludum33.entity.Player;
 
 public class Game extends JPanel implements Runnable, KeyListener{
@@ -22,7 +23,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private int ticks = 0;
 	
 	private enum Gamestate {
-		MENU, GAME
+		MENU, GAME, SCORE
 	}
 	private Gamestate gamestate = Gamestate.MENU;
 	
@@ -39,6 +40,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private boolean leftPressed = false;
 	
 	private Player player = new Player();
+	private Enemy enemy;
 	
 	private Font font;
 	
@@ -72,27 +74,50 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	private void tick(){
-		if(rightPressed){
-			if(player.getX() < getWidth())
-				player.addX(3);
-		}
-		if(leftPressed){
-			if(player.getX() > 0)
-				player.addX(-3);
-		}
-		if(player.getDestY()+70 < 400){
-			player.addDestY(1);
-		}
-		if(player.getDestY() < player.getY()){
-			player.addY(-2);
-		}else if(player.getDestY() > player.getY()){
-			player.addY(2);
+		if(gamestate == Gamestate.GAME){
+			if(rightPressed){
+				if(player.getX() < getWidth())
+					player.addX(3);
+			}
+			if(leftPressed){
+				if(player.getX() > 0)
+					player.addX(-3);
+			}
+			if(player.getDestY()+70 < 400){
+				player.addDestY(1);
+			}
+			if(player.getDestY() < player.getY()){
+				player.addY(-2);
+			}else if(player.getDestY() > player.getY()){
+				player.addY(2);
+			}
+			
+			if(enemy == null){
+				enemy = new Enemy(player.getPoints(), (int)Math.floor(player.getEnemiesDefeated()/1.0));
+			}
+			
+			if(enemy.getX() < -80){
+				enemy = null;
+			}
+			
+			if(enemy != null && player.getX()+80 > enemy.getX() && player.getX()+80 < enemy.getX()+80
+					&& player.getY()+80 > 330 && player.getY()+80 < 411){
+				if(player.getPoints() > enemy.getPoints()){
+					enemy = null;
+					player.killedEnemy();
+					player.addPoints((int)Math.floor(player.getEnemiesDefeated()/10.0)+1);
+				}else{
+					gamestate = Gamestate.SCORE;
+				}
+			}
+			
+			if(enemy != null)
+				enemy.tick();
 		}
 	}
 	
 	public void paint(Graphics g){
 		g.drawImage(imageBackground, 0, 0, getWidth(), getHeight(), null);
-		g.drawImage(imageGround, 0, getHeight()-80, getWidth(), 80, null);
 		g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
 		
 		switch(gamestate){
@@ -114,7 +139,30 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			}
 			break;
 		case GAME:
+			g.drawImage(imageGround, 0, getHeight()-80, getWidth(), 80, null);
 			g.drawImage(imagePlayer, player.getX(), player.getY(), 80, 80, null);
+			g.setColor(Color.WHITE);
+			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 13, 73);
+			g.setColor(Color.BLACK);
+			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 10, 70);
+			
+			try{
+				g.drawImage(enemy.getImage(), enemy.getX(), 330, 80, 80, null);
+				g.setFont(new Font("Aldo the Apache", Font.PLAIN, 20));
+				g.drawString(enemy.getPoints() + "", enemy.getX(), 330);
+			}catch(NullPointerException e){
+				
+			}
+			break;
+		case SCORE:
+			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+			g.fillRect(50, 50, getWidth()-100, getHeight()-100);
+			
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
+			g.setColor(Color.BLACK);
+			g.drawString("Leader Board", getWidth()/2-120+3, 100+3);
+			g.setColor(Color.WHITE);
+			g.drawString("Leader Board", getWidth()/2-120, 100);
 			break;
 		}
 	}
