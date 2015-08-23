@@ -13,14 +13,15 @@ public class Enemy {
 	Random rand = new Random();
 	int textureID = rand.nextInt(1);
 	int points;
-	int speed = 1;
+	double speed = 1;
 	
 	private Image imageEnemy;
 	
-	private Point loc = new Point(700, 330);
+	private Point loc = new Point(1200, 570);
 	
-	public Enemy(int playerpoints, int speed){
+	public Enemy(int playerpoints, double speed){
 		points = rand.nextInt(playerpoints+20);
+		this.speed = speed;
 		
 		try{
 			switch(textureID){
