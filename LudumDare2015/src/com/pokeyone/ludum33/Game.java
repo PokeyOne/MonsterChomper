@@ -173,11 +173,11 @@ public class Game extends JPanel implements Runnable, KeyListener{
 				if(player.getX() > 0)
 					player.addX(-3);
 			}
-			if(player.getDestY()+70 < 400){
-				player.addDestY(1);
+			if(player.getDestY()+80 < 400){
+				player.addDestY(2);
 			}
 			if(player.getDestY() < player.getY()){
-				player.addY(-2);
+				player.addY(-3);
 			}else if(player.getDestY() > player.getY()){
 				player.addY(2);
 			}
@@ -192,8 +192,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 				enemy = null;
 			}
 			
-			if(enemy != null && player.getX()+80 > enemy.getX() && player.getX()+80 < enemy.getX()+80
-					&& player.getY()+80 > 330 && player.getY()+80 < 411){
+			if(enemy != null && player.getX()+90 > enemy.getX() && player.getX()+90 < enemy.getX()+80
+					&& player.getY()+90 > 330 && player.getY()+90 < 411){
 				if(player.getPoints() > enemy.getPoints()){
 					enemy = null;
 					player.killedEnemy();
@@ -244,13 +244,13 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			g.fillRect(0, getHeight()-80, getWidth(), 20);
 			
 			g2d.setColor(new Color(37, 149, 37));
-			g2d.fillRoundRect(player.getX(), player.getY()+240, 80, 80, 10, 10);
+			g2d.fillRoundRect(player.getX(), player.getY()+240, 90, 90, 10, 10);
 			g2d.setColor(new Color(51, 204, 51));
-			g2d.fillRoundRect(player.getX()+5, player.getY()+245, 70, 70, 10, 10);
+			g2d.fillRoundRect(player.getX()+5, player.getY()+245, 80, 80, 10, 10);
 			g2d.setColor(Color.WHITE);
-			g2d.fillOval(player.getX()+60, player.getY()+240, 30, 30);
+			g2d.fillOval(player.getX()+70, player.getY()+240, 30, 30);
 			g2d.setColor(new Color(10, 100, 200));
-			g2d.fillOval(player.getX()+80, player.getY()+250, 10, 10);
+			g2d.fillOval(player.getX()+90, player.getY()+250, 10, 10);
 			
 			g.setColor(Color.WHITE);
 			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 13, 73);
@@ -402,8 +402,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_W:
 			case KeyEvent.VK_UP:
-				if(player.getDestY()+70 >= 400)
-					player.addDestY(-200);
+				if(player.getDestY()+80 >= 400)
+					player.addDestY(-250);
 				break;
 			case KeyEvent.VK_D:
 			case KeyEvent.VK_RIGHT:
