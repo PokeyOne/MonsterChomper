@@ -58,7 +58,6 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private Enemy enemy;
 	private double enemySpeed;
 	
-	private Font font;
 	
 	public Game(){
 		setPreferredSize(new Dimension((int)(640*1.5), (int)(480*1.5)));
@@ -68,13 +67,12 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		try{
 			loadScores();
 			
-			imageBackground = new ImageIcon(Game.class.getResource("/Background.jpg")).getImage();
-			imageButton = new ImageIcon(Game.class.getResource("/Button.png")).getImage();
-			imageButtonSelected = new ImageIcon(Game.class.getResource("/ButtonSelected.png")).getImage();
+			imageBackground = new ImageIcon("res/Background.jpg").getImage();
+			imageButton = new ImageIcon("res/Button.png").getImage();
+			imageButtonSelected = new ImageIcon("res/ButtonSelected.png").getImage();
 			
-			font = Font.createFont(Font.TRUETYPE_FONT, Game.class.getResourceAsStream("/AldotheApache.ttf"));
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, Game.class.getResourceAsStream("/AldotheApache.ttf")));
+			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, Game.class.getClassLoader().getResourceAsStream("/AldotheApache.ttf")));
 		}catch(NullPointerException e){
 			e.printStackTrace();
 			System.exit(404);
@@ -92,7 +90,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	private void loadScores() throws URISyntaxException, IOException{
-		File file = new File(Game.class.getResource("/scores.save").toURI());
+		File file = new File("res/scores.save");
 		FileReader fr = new FileReader(file);
 		BufferedReader bfr = new BufferedReader(fr);
 		
@@ -138,7 +136,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	private void saveScores() throws IOException, URISyntaxException {
-		File file = new File(Game.class.getResource("/scores.save").toURI());
+		File file = new File("res/scores.save");
 		FileWriter fw = new FileWriter(file);
 		BufferedWriter bw = new BufferedWriter(fw);
 		
