@@ -12,7 +12,7 @@ public class Frame extends JFrame{
 		setResizable(false);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
-		setTitle("Monster Comper");
+		setTitle("Monster Chomper");
 		setVisible(true);
 	}
 	

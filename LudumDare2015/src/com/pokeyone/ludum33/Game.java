@@ -5,8 +5,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedReader;
@@ -16,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -27,23 +30,26 @@ import com.pokeyone.ludum33.entity.Player;
 public class Game extends JPanel implements Runnable, KeyListener{
 
 	Thread thread = new Thread(this);
-	private int ticks = 0;
 	
 	private enum Gamestate {
-		MENU, GAME, SCORE
+		MENU, GAME, SCORE, NAME, HELP
 	}
-	private Gamestate gamestate = Gamestate.MENU;
+	private Gamestate gamestate = Gamestate.NAME;
 	
-	private String[] menuItems = {"Play", "Quit"};
+	private String[] menuItems = {"Play", "Quit", "Help"};
 	private int menuItemSelected = 0;
 	
 	private Score[] scores = new Score[10];
+	
+	private Random random = new Random();
 	
 	private Image imageBackground;
 	private Image imageGround;
 	private Image imageButton;
 	private Image imageButtonSelected;
 	private Image imagePlayer;
+	
+	private String name = "BetaTester";
 	
 	private boolean rightPressed = false;
 	private boolean leftPressed = false;
@@ -63,10 +69,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			loadScores();
 			
 			imageBackground = new ImageIcon(Game.class.getResource("/Background.jpg")).getImage();
-			imageGround = new ImageIcon(Game.class.getResource("/ground.jpg")).getImage();
 			imageButton = new ImageIcon(Game.class.getResource("/Button.png")).getImage();
 			imageButtonSelected = new ImageIcon(Game.class.getResource("/ButtonSelected.png")).getImage();
-			imagePlayer = new ImageIcon(Game.class.getResource("/Character.png")).getImage();
 			
 			font = Font.createFont(Font.TRUETYPE_FONT, Game.class.getResourceAsStream("/AldotheApache.ttf"));
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
@@ -124,6 +128,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 					}
 					
 					scores[i] = score;
+					break;
 				}
 			}else{
 				scores[i] = score;
@@ -194,7 +199,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 					player.killedEnemy();
 					player.addPoints((int)Math.floor(player.getEnemiesDefeated()/10.0)+1);
 				}else{
-					newScore("AlphaTester", player.getPoints());
+					enemy = null;
+					newScore(name, player.getPoints());
 					gamestate = Gamestate.SCORE;
 				}
 			}
@@ -205,7 +211,10 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	public void paint(Graphics g){
-		g.drawImage(imageBackground, 0, 0, getWidth(), getHeight(), null);
+		Graphics2D g2d = (Graphics2D)g;
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		g2d.drawImage(imageBackground, 0, 0, getWidth(), getHeight(), null);
 		g.setFont(new Font("Aldo the Apache", Font.PLAIN, 120));
 		
 		switch(gamestate){
@@ -229,19 +238,58 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		case GAME:
 			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
 			g.drawImage(imageGround, 0, getHeight()-80, getWidth(), 80, null);
-			g.drawImage(imagePlayer, player.getX(), player.getY()+240, 80, 80, null);
+			g.setColor(new Color(100, 70, 30));
+			g.fillRect(0, getHeight()-80, getWidth(), 80);
+			g.setColor(new Color(0, 150, 10));
+			g.fillRect(0, getHeight()-80, getWidth(), 20);
+			
+			g2d.setColor(new Color(37, 149, 37));
+			g2d.fillRoundRect(player.getX(), player.getY()+240, 80, 80, 10, 10);
+			g2d.setColor(new Color(51, 204, 51));
+			g2d.fillRoundRect(player.getX()+5, player.getY()+245, 70, 70, 10, 10);
+			g2d.setColor(Color.WHITE);
+			g2d.fillOval(player.getX()+60, player.getY()+240, 30, 30);
+			g2d.setColor(new Color(10, 100, 200));
+			g2d.fillOval(player.getX()+80, player.getY()+250, 10, 10);
+			
 			g.setColor(Color.WHITE);
 			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 13, 73);
 			g.setColor(Color.BLACK);
 			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 10, 70);
 			
-			try{
-				g.drawImage(enemy.getImage(), enemy.getX(), 570, 80, 80, null);
+			if(enemy != null){
+				g2d.setColor(enemy.getColor());
+				g2d.fillRoundRect(enemy.getX(), 570, 80, 80, 10, 10);
+				g2d.setColor(new Color(enemy.getColor().getRed()+55, enemy.getColor().getGreen()+55, enemy.getColor().getBlue()+55));
+				g2d.fillRoundRect(enemy.getX()+5, 575, 70, 70, 10, 10);
+				g2d.setColor(Color.WHITE);
+				g2d.fillOval(enemy.getX()-10, 580, 30, 30);
+				g2d.setColor(new Color(10, 100, 200));
+				g2d.fillOval(enemy.getX()-10, 580, 10, 10);
+				
+				g.setColor(Color.BLACK);
 				g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
 				g.drawString(enemy.getPoints() + "", enemy.getX(), 570);
-			}catch(NullPointerException e){
-				
 			}
+			break;
+		case NAME:
+			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+			g.fillRect(50, 50, getWidth()-100, getHeight()-100);
+			
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
+			g.setColor(Color.BLACK);
+			g.drawString("Name Entry", getWidth()/2-120+3, 100+3);
+			g.setColor(Color.WHITE);
+			g.drawString("Name Entry", getWidth()/2-120, 100);
+			
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
+			g.setColor(Color.BLACK);
+			g.drawString(name+"_", getWidth()/2-((name.toCharArray().length+1)*9), 200);
+			g.setColor(Color.WHITE);
+			g.drawString(name+"_", getWidth()/2-((name.toCharArray().length+1)*9)-3, 200-3);
+			
+			g.drawString("Type keys to change the name above", 60, getHeight()-60);
+			
 			break;
 		case SCORE:
 			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
@@ -266,6 +314,36 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			}
 			
 			break;
+		case HELP:
+			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+			g.fillRect(10, 10, getWidth()-20, getHeight()-20);
+			
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
+			g.setColor(Color.BLACK);
+			g.drawString("help screen!", getWidth()/2-180+3, 70+3);
+			g.setColor(Color.WHITE);
+			g.drawString("help screen!", getWidth()/2-180, 70);
+			
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
+			String helpMsgStr = "Welcome to Monster Chomper, my submission for Ludum dare 33 2015. The game"
+					+ " is very simple, just use the arrow/wasd keys to move back and forth, and jump."
+					+ " During the game, monsters will come at you, and you must jump to dodge them if"
+					+ " their size(number above their head) is bigger than yours, and eat them(run"
+					+ " into them) if their size is smaller. Press ESC or Enter to exit this message.";
+			char[] helpMsg = helpMsgStr.toCharArray();
+			
+			for(int y = 0; y < 20; y++){
+				for(int x = 0; x < 28; x++){
+					try{
+						g.setColor(Color.BLACK);
+						g.drawString("" + helpMsg[x+y*28], 63+30*x, 123+45*y);
+						g.setColor(Color.WHITE);
+						g.drawString("" + helpMsg[x+y*28], 60+30*x, 120+45*y);
+					}catch(ArrayIndexOutOfBoundsException e){
+						break;
+					}
+				}
+			}
 		}
 	}
 	
@@ -305,10 +383,16 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			case KeyEvent.VK_ENTER:
 				switch(menuItemSelected){
 				case 0:
+					player = new Player();
+					enemySpeed = 2.0;
+					enemy = null;
 					gamestate = Gamestate.GAME;
 					break;
 				case 1:
 					exit();
+					break;
+				case 2:
+					gamestate = Gamestate.HELP;
 					break;
 				}
 				break;
@@ -331,11 +415,107 @@ public class Game extends JPanel implements Runnable, KeyListener{
 				break;
 			}
 			break;
+		case NAME:
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_A:
+				name = (name + "a");
+				break;
+			case KeyEvent.VK_B:
+				name = (name + "b");
+				break;
+			case KeyEvent.VK_C:
+				name = (name + "c");
+				break;
+			case KeyEvent.VK_D:
+				name = (name + "d");
+				break;
+			case KeyEvent.VK_E:
+				name = (name + "e");
+				break;
+			case KeyEvent.VK_F:
+				name = (name + "f");
+				break;
+			case KeyEvent.VK_G:
+				name = (name + "g");
+				break;
+			case KeyEvent.VK_H:
+				name = (name + "h");
+				break;
+			case KeyEvent.VK_I:
+				name = (name + "i");
+				break;
+			case KeyEvent.VK_J:
+				name = (name + "j");
+				break;
+			case KeyEvent.VK_K:
+				name = (name + "k");
+				break;
+			case KeyEvent.VK_L:
+				name = (name + "l");
+				break;
+			case KeyEvent.VK_M:
+				name = (name + "m");
+				break;
+			case KeyEvent.VK_N:
+				name = (name + "n");
+				break;
+			case KeyEvent.VK_O:
+				name = (name + "o");
+				break;
+			case KeyEvent.VK_P:
+				name = (name + "p");
+				break;
+			case KeyEvent.VK_Q:
+				name = (name + "q");
+				break;
+			case KeyEvent.VK_R:
+				name = (name + "r");
+				break;
+			case KeyEvent.VK_S:
+				name = (name + "s");
+				break;
+			case KeyEvent.VK_T:
+				name = (name + "t");
+				break;
+			case KeyEvent.VK_U:
+				name = (name + "u");
+				break;
+			case KeyEvent.VK_V:
+				name = (name + "v");
+				break;
+			case KeyEvent.VK_W:
+				name = (name + "w");
+				break;
+			case KeyEvent.VK_X:
+				name = (name + "x");
+				break;
+			case KeyEvent.VK_Y:
+				name = (name + "y");
+				break;
+			case KeyEvent.VK_Z:
+				name = (name + "z");
+				break;
+			case KeyEvent.VK_BACK_SPACE:
+			case KeyEvent.VK_DELETE:
+				name = (name.substring(0, name.length()-1));
+				break;
+			case KeyEvent.VK_ENTER:
+				gamestate = Gamestate.SCORE;
+			}
+			break;
 		case SCORE:
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_ENTER:
 			case KeyEvent.VK_ESCAPE:
-				exit();
+				gamestate = Gamestate.MENU;
+				break;
+			}
+			break;
+		case HELP:
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_ENTER:
+			case KeyEvent.VK_ESCAPE:
+				gamestate = Gamestate.MENU;
 				break;
 			}
 			break;

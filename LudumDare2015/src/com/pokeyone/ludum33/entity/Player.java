@@ -10,6 +10,8 @@ public class Player {
 	private Point loc = new Point(0, 0);
 	private Point destLoc = new Point(0, 0);
 	
+	private String name = "BetaTester";
+	
 	public Player(){
 		
 	}
@@ -76,5 +78,13 @@ public class Player {
 	
 	public int getEnemiesDefeated(){
 		return enemiesDefeated;
+	}
+	
+	public String getName(){
+		return name;
+	}
+	
+	public void setName(String n){
+		name = n;
 	}
 }
