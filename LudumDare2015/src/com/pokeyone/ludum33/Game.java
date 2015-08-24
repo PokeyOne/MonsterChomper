@@ -72,7 +72,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			imageButtonSelected = new ImageIcon("res/ButtonSelected.png").getImage();
 			
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
-			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, Game.class.getClassLoader().getResourceAsStream("/AldotheApache.ttf")));
+			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("res/AldotheApache.ttf")));
 		}catch(NullPointerException e){
 			e.printStackTrace();
 			System.exit(404);
