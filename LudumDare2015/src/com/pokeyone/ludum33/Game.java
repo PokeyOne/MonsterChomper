@@ -44,10 +44,9 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private Random random = new Random();
 	
 	private Image imageBackground;
-	private Image imageGround;
 	private Image imageButton;
 	private Image imageButtonSelected;
-	private Image imagePlayer;
+	private Image imagePowerUp;
 	
 	private String name = "BetaTester";
 	
@@ -57,7 +56,6 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private Player player = new Player();
 	private Enemy enemy;
 	private double enemySpeed;
-	
 	
 	public Game(){
 		setPreferredSize(new Dimension((int)(640*1.5), (int)(480*1.5)));
@@ -70,6 +68,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			imageBackground = new ImageIcon("res/Background.jpg").getImage();
 			imageButton = new ImageIcon("res/Button.png").getImage();
 			imageButtonSelected = new ImageIcon("res/ButtonSelected.png").getImage();
+			imagePowerUp = new ImageIcon("res/PowerUp.png").getImage();
 			
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("res/AldotheApache.ttf")));
@@ -192,7 +191,19 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			
 			if(enemy != null && player.getX()+90 > enemy.getX() && player.getX()+90 < enemy.getX()+80
 					&& player.getY()+90 > 330 && player.getY()+90 < 411){
-				if(player.getPoints() > enemy.getPoints()){
+				if(enemy.isPowerUp()){
+					switch(enemy.getPowerType()){
+					case NONE:
+						break;
+					case PLUS_SIZE:
+						player.addPoints(100);
+						break;
+					case PLUS_SPEED:
+						player.addKills(50);
+						break;
+					}
+					enemy = null;
+				}else if(player.getPoints() > enemy.getPoints()){
 					enemy = null;
 					player.killedEnemy();
 					player.addPoints((int)Math.floor(player.getEnemiesDefeated()/10.0)+1);
@@ -217,6 +228,12 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		
 		switch(gamestate){
 		case MENU:
+			
+			for(int i = 0; i < 15; i++){
+				g.setColor(new Color(((i+1)*(255/15)), ((i+1)*(102/15)), ((i+1)*(0/15))));
+				g.drawString("Monster Chomper", getWidth()/2-(60*7)-(1*i), 150-(1*i));
+			}
+			
 			for(int i = 0; i < menuItems.length; i++){
 				if(menuItemSelected != i){
 					g.drawImage(imageButton, getWidth()/2-128*2, getHeight()/2-50*2+(70*i*2), 256*2, 64*2, null);
@@ -235,7 +252,6 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			break;
 		case GAME:
 			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
-			g.drawImage(imageGround, 0, getHeight()-80, getWidth(), 80, null);
 			g.setColor(new Color(100, 70, 30));
 			g.fillRect(0, getHeight()-80, getWidth(), 80);
 			g.setColor(new Color(0, 150, 10));
@@ -256,18 +272,29 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			g.drawString("Size: " + player.getPoints() + "        Killed: " + player.getEnemiesDefeated(), 10, 70);
 			
 			if(enemy != null){
-				g2d.setColor(enemy.getColor());
-				g2d.fillRoundRect(enemy.getX(), 570, 80, 80, 10, 10);
-				g2d.setColor(new Color(enemy.getColor().getRed()+55, enemy.getColor().getGreen()+55, enemy.getColor().getBlue()+55));
-				g2d.fillRoundRect(enemy.getX()+5, 575, 70, 70, 10, 10);
-				g2d.setColor(Color.WHITE);
-				g2d.fillOval(enemy.getX()-10, 580, 30, 30);
-				g2d.setColor(new Color(10, 100, 200));
-				g2d.fillOval(enemy.getX()-10, 580, 10, 10);
-				
-				g.setColor(Color.BLACK);
-				g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
-				g.drawString(enemy.getPoints() + "", enemy.getX(), 570);
+				if(!enemy.isPowerUp()){
+					g2d.setColor(enemy.getColor());
+					g2d.fillRoundRect(enemy.getX(), 570, 80, 80, 10, 10);
+					g2d.setColor(new Color(enemy.getColor().getRed()+55, enemy.getColor().getGreen()+55, enemy.getColor().getBlue()+55));
+					g2d.fillRoundRect(enemy.getX()+5, 575, 70, 70, 10, 10);
+					g2d.setColor(Color.WHITE);
+					g2d.fillOval(enemy.getX()-10, 580, 30, 30);
+					g2d.setColor(new Color(10, 100, 200));
+					g2d.fillOval(enemy.getX()-10, 580, 10, 10);
+					
+					g.setColor(Color.BLACK);
+					g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
+					g.drawString(enemy.getPoints() + "", enemy.getX(), 570);
+					g.setFont(new Font("Aldo the Apache", Font.PLAIN, 80));
+					if(enemy.getX() < getWidth())
+						g.drawString("Enemy: " + enemy.getPoints(), getWidth()/2, getHeight()/2+40);
+				}else{
+					g2d.setColor(enemy.getColor());
+					g2d.fillRoundRect(enemy.getX(), 570, 80, 80, 10, 10);
+					g2d.setColor(new Color(enemy.getColor().getRed()+55, enemy.getColor().getGreen()+55, enemy.getColor().getBlue()+55));
+					g2d.fillRoundRect(enemy.getX()+5, 575, 70, 70, 10, 10);
+					g2d.drawImage(imagePowerUp, enemy.getX() + 5, 570 + 5, 80 - 10, 80 - 10, null);
+				}
 			}
 			break;
 		case NAME:
