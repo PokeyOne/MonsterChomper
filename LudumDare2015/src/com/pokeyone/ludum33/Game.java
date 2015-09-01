@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Random;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -26,22 +25,24 @@ import javax.swing.JPanel;
 import com.pokeyone.ludum33.data.Score;
 import com.pokeyone.ludum33.entity.Enemy;
 import com.pokeyone.ludum33.entity.Player;
+import com.pokeyone.ludum33.shop.ShopItem;
 
 public class Game extends JPanel implements Runnable, KeyListener{
 
 	Thread thread = new Thread(this);
 	
 	private enum Gamestate {
-		MENU, GAME, SCORE, NAME, HELP
+		MENU, GAME, SCORE, NAME, HELP, SHOP
 	}
 	private Gamestate gamestate = Gamestate.NAME;
 	
-	private String[] menuItems = {"Play", "Quit", "Help"};
+	private String[] menuItems = {"Play", "Quit", "Help", "Shop"};
 	private int menuItemSelected = 0;
 	
 	private Score[] scores = new Score[10];
+	private int money = 0;
 	
-	private Random random = new Random();
+	private ShopItem[] shopItems = {new ShopItem(10, 10, 2, "Starting Size")};
 	
 	private Image imageBackground;
 	private Image imageButton;
@@ -174,9 +175,17 @@ public class Game extends JPanel implements Runnable, KeyListener{
 				player.addDestY(2);
 			}
 			if(player.getDestY() < player.getY()){
-				player.addY(-3);
+				if(player.getDestY() < player.getY()-20){
+					player.addY(-3);
+				}else{
+					player.addY(-2);
+				}
 			}else if(player.getDestY() > player.getY()){
-				player.addY(2);
+				if(player.getDestY() > player.getY()+20){
+					player.addY(2);
+				}else{
+					player.addY(1);
+				}
 			}
 			
 			if(enemy == null){
@@ -236,17 +245,17 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			
 			for(int i = 0; i < menuItems.length; i++){
 				if(menuItemSelected != i){
-					g.drawImage(imageButton, getWidth()/2-128*2, getHeight()/2-50*2+(70*i*2), 256*2, 64*2, null);
+					g.drawImage(imageButton, getWidth()/2-128*2, getHeight()/2-50*2+(70*i*2)-100, 256*2, 64*2, null);
 					g.setColor(new Color(100, 100, 100));
-					g.drawString(menuItems[i], getWidth()/2-128*2+42, getHeight()/2-50*2+(70*i*2)+57*2);
+					g.drawString(menuItems[i], getWidth()/2-128*2+42, getHeight()/2-50*2+(70*i*2)+57*2-100);
 					g.setColor(new Color(250, 250, 250));
-					g.drawString(menuItems[i], getWidth()/2-128*2+40, getHeight()/2-50*2+(70*i*2)+55*2);
+					g.drawString(menuItems[i], getWidth()/2-128*2+40, getHeight()/2-50*2+(70*i*2)+55*2-100);
 				}else{
-					g.drawImage(imageButtonSelected, getWidth()/2-133*2, getHeight()/2-50*2+(70*i*2), 256*2+20, 64*2, null);
+					g.drawImage(imageButtonSelected, getWidth()/2-133*2, getHeight()/2-50*2+(70*i*2)-100, 256*2+20, 64*2, null);
 					g.setColor(new Color(100, 100, 100));
-					g.drawString(menuItems[i], getWidth()/2-128*2+42, getHeight()/2-50*2+(70*i*2)+57*2);
+					g.drawString(menuItems[i], getWidth()/2-128*2+42, getHeight()/2-50*2+(70*i*2)+57*2-100);
 					g.setColor(new Color(250, 250, 250));
-					g.drawString(menuItems[i], getWidth()/2-128*2+40, getHeight()/2-50*2+(70*i*2)+55*2);
+					g.drawString(menuItems[i], getWidth()/2-128*2+40, getHeight()/2-50*2+(70*i*2)+55*2-100);
 				}
 			}
 			break;
@@ -369,6 +378,16 @@ public class Game extends JPanel implements Runnable, KeyListener{
 					}
 				}
 			}
+			break;
+		case SHOP:
+			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+			g.fillRect(10, 10, getWidth()-20, getHeight()-20);
+			
+			for(int i = 0; i < shopItems.length; i++){
+				//TODO: render all shop items
+				//TODO: add scrolling/pages, to support lots of upgrades in future
+			}
+			break;
 		}
 	}
 	
@@ -418,6 +437,9 @@ public class Game extends JPanel implements Runnable, KeyListener{
 					break;
 				case 2:
 					gamestate = Gamestate.HELP;
+					break;
+				case 3:
+					gamestate = Gamestate.SHOP;
 					break;
 				}
 				break;
@@ -539,6 +561,13 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		case HELP:
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_ENTER:
+			case KeyEvent.VK_ESCAPE:
+				gamestate = Gamestate.MENU;
+				break;
+			}
+			break;
+		case SHOP:
+			switch(e.getKeyCode()){
 			case KeyEvent.VK_ESCAPE:
 				gamestate = Gamestate.MENU;
 				break;
