@@ -12,6 +12,10 @@ public class Player {
 	
 	private String name = "BetaTester";
 	
+	public Player(int startBonus){
+		points+=startBonus;
+	}
+	
 	public Player(){
 		
 	}

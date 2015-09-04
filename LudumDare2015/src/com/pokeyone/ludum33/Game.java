@@ -42,7 +42,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private Score[] scores = new Score[10];
 	private int money = 0;
 	
-	private ShopItem[] shopItems = {new ShopItem(10, 10, 2, "Starting Size")};
+	private ShopItem[] shopItems = {new ShopItem(10, 10, 2, "Starting Size"), new ShopItem(10, 40, 2, "Downgrade Enemy Size by One per Upgrade")};
+	private int shopItemSelected = 0;
 	
 	private Image imageBackground;
 	private Image imageButton;
@@ -65,6 +66,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		
 		try{
 			loadScores();
+			loadStats();
 			
 			imageBackground = new ImageIcon("res/Background.jpg").getImage();
 			imageButton = new ImageIcon("res/Button.png").getImage();
@@ -99,13 +101,11 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			if(str == null || str == " " || str == "\n" || str == ""){
 				break;
 			}else{
-				System.out.println("line " + i + " is equal to " + str);
 			}
 			String[] strings = str.split(" ", 2);
 			
 			try{
 				scores[i] = new Score(Integer.valueOf(strings[0]), strings[1]);
-				System.out.println("loaded score of: " + scores[i].getScore() + " From the player: " + scores[i].getName());
 			}catch(NumberFormatException e){
 				
 			}
@@ -117,6 +117,8 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	
 	private void newScore(String name, int amo){
 		Score score = new Score(amo, name);
+		
+		money += amo;
 		
 		for(int i = 0; i < 10; i++){
 			if(scores[i] != null){
@@ -152,9 +154,41 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		bw.close();
 	}
 	
+	public void loadStats() throws URISyntaxException, IOException{
+		File file = new File("res/stats.save");
+		FileReader fr = new FileReader(file);
+		BufferedReader bfr = new BufferedReader(fr);
+		
+		money = Integer.valueOf(bfr.readLine());
+		
+		for(int i = 0; i < shopItems.length; i++){
+			shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
+			shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
+		}
+		
+		bfr.close();
+		
+	}
+	
+	public void saveStats() throws IOException, URISyntaxException {
+		File file = new File("res/stats.save");
+		FileWriter fw = new FileWriter(file);
+		BufferedWriter bw = new BufferedWriter(fw);
+		
+		bw.write(money + "\n");
+		
+		for(int i = 0; i < shopItems.length; i++){
+			bw.write(shopItems[i].getAmount() + "\n");
+			bw.write(shopItems[i].getPrice() + "\n");
+		}
+		
+		bw.close();
+	}
+	
 	public void exit(){
 		try {
 			saveScores();
+			saveStats();
 		} catch (IOException | URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -190,7 +224,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			
 			if(enemy == null){
 				enemySpeed = Math.floor(player.getEnemiesDefeated()/50.0)+2;
-				enemy = new Enemy(player.getPoints(), enemySpeed);
+				enemy = new Enemy(player.getPoints()-(1*shopItems[1].getAmount()), enemySpeed);
 				System.out.println("speed is: " + enemySpeed);
 			}
 			
@@ -258,6 +292,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 					g.drawString(menuItems[i], getWidth()/2-128*2+40, getHeight()/2-50*2+(70*i*2)+55*2-100);
 				}
 			}
+			
 			break;
 		case GAME:
 			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 60));
@@ -381,10 +416,38 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			break;
 		case SHOP:
 			g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
-			g.fillRect(10, 10, getWidth()-20, getHeight()-20);
-			
+			g.fillRect(10, 50, getWidth()-20, getHeight()-60);
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 40));
+			g.setColor(new Color(0x000000));
+			g.drawString("Money: " + money, 10+3, 45);
+			g.setColor(new Color(0xFFFFFF));
+			g.drawString("Money: " + money, 10, 45-3);
+			g.setFont(new Font("Aldo the Apache", Font.PLAIN, 20));
 			for(int i = 0; i < shopItems.length; i++){
-				//TODO: render all shop items
+				if(shopItemSelected == i){
+					g.setColor(new Color(0.2f, 0.2f, 0.4f, 0.8f));
+				}else{
+					g.setColor(new Color(0.1f, 0.1f, 0.1f, 0.5f));
+				}
+				g.fillRect(20, 60+((getHeight()-40)/4*i)+10*i, getWidth()-40, (getHeight()-70)/4);
+				g.setColor(new Color(0x000000));
+				g.drawString(shopItems[i].getName(), 30, 105+((getHeight()-70)/4*i) + 10*i);
+				g.setColor(new Color(0xFFFFFF));
+				g.drawString(shopItems[i].getName(), 30-3, 105-3+((getHeight()-70)/4*i) + 10*i);
+				
+				g.setColor(new Color(0x000000));
+				g.drawString("Price" + shopItems[i].getPrice(), 630, 105+((getHeight()-70)/4*i) + 10*i);
+				g.setColor(new Color(0xFFFFFF));
+				g.drawString("Price" + shopItems[i].getPrice(), 630-3, 105-3+((getHeight()-70)/4*i) + 10*i);
+				
+				for(int n = 0; n < shopItems[i].getMaxAmount(); n++){
+					g.setColor(new Color(0xFEFEFE));
+					g.drawOval(30 + 30*n, 150+((getHeight()-70)/4*i) + 10*i, 25, 25);
+					
+					if(shopItems[i].getAmount() > n){
+						g.fillOval(35 + 30*n, 155+((getHeight()-70)/4*i) + 10*i, 15, 15);
+					}
+				}
 				//TODO: add scrolling/pages, to support lots of upgrades in future
 			}
 			break;
@@ -427,7 +490,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			case KeyEvent.VK_ENTER:
 				switch(menuItemSelected){
 				case 0:
-					player = new Player();
+					player = new Player(50*shopItems[0].getAmount());
 					enemySpeed = 2.0;
 					enemy = null;
 					gamestate = Gamestate.GAME;
@@ -542,6 +605,12 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			case KeyEvent.VK_Z:
 				name = (name + "z");
 				break;
+			case KeyEvent.VK_SPACE:
+				name = (name + " ");
+				break;
+			case KeyEvent.VK_UNDERSCORE:
+				name = (name + "_");
+				break;
 			case KeyEvent.VK_BACK_SPACE:
 			case KeyEvent.VK_DELETE:
 				name = (name.substring(0, name.length()-1));
@@ -570,6 +639,36 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_ESCAPE:
 				gamestate = Gamestate.MENU;
+				break;
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_S:
+				shopItemSelected++;
+				if(shopItemSelected == shopItems.length){
+					shopItemSelected = 0;
+				}
+				break;
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_W:
+				shopItemSelected--;
+				if(shopItemSelected < 0){
+					shopItemSelected = shopItems.length-1;
+				}
+				break;
+			case KeyEvent.VK_ENTER:
+				switch(shopItemSelected){
+				case 0:
+					if(money >= shopItems[0].getPrice() && shopItems[0].getAmount() < shopItems[0].getMaxAmount()){
+						money-=shopItems[0].getPrice();
+						shopItems[0].purchase();
+					}
+					break;
+				case 1:
+					if(money >= shopItems[1].getPrice() && shopItems[0].getAmount() < shopItems[0].getMaxAmount()){
+						money-=shopItems[1].getPrice();
+						shopItems[1].purchase();
+					}
+					break;
+				}
 				break;
 			}
 			break;
