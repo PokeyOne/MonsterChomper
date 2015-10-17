@@ -1,5 +1,2 @@
-.project
-.classpath
-org.eclipse.jdt.core.prefs
-Thumbs.db
-*(backup)
+
+/target/
