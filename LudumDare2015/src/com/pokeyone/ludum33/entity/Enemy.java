@@ -17,7 +17,7 @@ public class Enemy {
 	
 	private Random rand = new Random();
 	private int points;
-	private double speed = 1;
+	private double speed = 3;
 	
 	private boolean isPower = false;
 	private PowerType powerType = PowerType.NONE;
@@ -27,7 +27,7 @@ public class Enemy {
 	private Point loc = new Point(1200, 570);
 	
 	public Enemy(int playerpoints, double speed){
-		points = rand.nextInt(playerpoints+20);
+		points = rand.nextInt((int)(playerpoints*1.5+1));
 		this.speed = speed;
 		
 		if(rand.nextInt(25) == 1){

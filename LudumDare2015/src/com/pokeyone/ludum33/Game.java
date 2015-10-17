@@ -68,7 +68,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			loadScores();
 			loadStats();
 			
-			imageBackground = new ImageIcon("res/Background.jpg").getImage();
+			imageBackground = new ImageIcon("res/Background.png").getImage();
 			imageButton = new ImageIcon("res/Button.png").getImage();
 			imageButtonSelected = new ImageIcon("res/ButtonSelected.png").getImage();
 			imagePowerUp = new ImageIcon("res/PowerUp.png").getImage();
@@ -162,8 +162,19 @@ public class Game extends JPanel implements Runnable, KeyListener{
 		money = Integer.valueOf(bfr.readLine());
 		
 		for(int i = 0; i < shopItems.length; i++){
-			shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
-			shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
+			try{
+				shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
+			}catch(NumberFormatException e){
+				System.out.println("couldn't find current amount of " + shopItems[i].getName());
+				shopItems[i].setAmount(0);
+			}
+			
+			try{
+				shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
+			}catch(NumberFormatException e){
+				System.out.println("couldn't find current price of " + shopItems[i].getName());
+				shopItems[i].setAmount(0);
+			}
 		}
 		
 		bfr.close();
@@ -198,41 +209,35 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	private void tick(){
 		if(gamestate == Gamestate.GAME){
 			if(rightPressed){
-				if(player.getX() < getWidth())
-					player.addX(3);
+				if(player.getX()+80 < getWidth())
+					player.addX(9);
 			}
 			if(leftPressed){
 				if(player.getX() > 0)
-					player.addX(-3);
+					player.addX(-9);
 			}
-			if(player.getDestY()+80 < 400){
-				player.addDestY(2);
+			
+			if(player.getY() < 320){
+				player.addYSpeed(1);
 			}
-			if(player.getDestY() < player.getY()){
-				if(player.getDestY() < player.getY()-20){
-					player.addY(-3);
-				}else{
-					player.addY(-2);
-				}
-			}else if(player.getDestY() > player.getY()){
-				if(player.getDestY() > player.getY()+20){
-					player.addY(2);
-				}else{
-					player.addY(1);
-				}
+			
+			player.addY(player.getYSpeed());
+			
+			if(player.getY() >= 320){
+				player.setY(320);
+				player.setYSpeed(0);
 			}
 			
 			if(enemy == null){
-				enemySpeed = Math.floor(player.getEnemiesDefeated()/50.0)+2;
-				enemy = new Enemy(player.getPoints()-(1*shopItems[1].getAmount()), enemySpeed);
-				System.out.println("speed is: " + enemySpeed);
+				enemySpeed = Math.floor(player.getEnemiesDefeated()/25.0)+6;
+				enemy = new Enemy(player.getPoints()-(2*shopItems[1].getAmount()), enemySpeed);
 			}
 			
 			if(enemy.getX() < -80){
 				enemy = null;
 			}
 			
-			if(enemy != null && player.getX()+90 > enemy.getX() && player.getX()+90 < enemy.getX()+80
+			if(enemy != null && player.getX()+90 > enemy.getX() && player.getX() < enemy.getX()+80
 					&& player.getY()+90 > 330 && player.getY()+90 < 411){
 				if(enemy.isPowerUp()){
 					switch(enemy.getPowerType()){
@@ -246,7 +251,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 						break;
 					}
 					enemy = null;
-				}else if(player.getPoints() > enemy.getPoints()){
+				}else if(player.getPoints() >= enemy.getPoints()){
 					enemy = null;
 					player.killedEnemy();
 					player.addPoints((int)Math.floor(player.getEnemiesDefeated()/10.0)+1);
@@ -459,7 +464,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			tick();
 			repaint();
 			try{
-				Thread.sleep(5);
+				Thread.sleep(17);
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
@@ -512,8 +517,10 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			switch(e.getKeyCode()){
 			case KeyEvent.VK_W:
 			case KeyEvent.VK_UP:
-				if(player.getDestY()+80 >= 400)
-					player.addDestY(-250);
+				if(player.getY()+80 >= 380){
+					player.addYSpeed(-20);
+					System.out.println("jumping");
+				}
 				break;
 			case KeyEvent.VK_D:
 			case KeyEvent.VK_RIGHT:
@@ -613,6 +620,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 				break;
 			case KeyEvent.VK_BACK_SPACE:
 			case KeyEvent.VK_DELETE:
+				if(name.length() > 0)
 				name = (name.substring(0, name.length()-1));
 				break;
 			case KeyEvent.VK_ENTER:

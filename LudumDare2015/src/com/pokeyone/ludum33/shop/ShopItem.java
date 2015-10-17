@@ -6,9 +6,9 @@ public class ShopItem {
 	private int amount;
 	private int price;
 	private String name;
-	private int scale;
+	private double scale;
 	
-	public ShopItem(int amountMax, int price, int scale, String name){
+	public ShopItem(int amountMax, int price, double scale, String name){
 		this.amountMax = amountMax;
 		this.price = price;
 		this.name = name;

@@ -8,7 +8,7 @@ public class Player {
 	private int enemiesDefeated = 0;
 	
 	private Point loc = new Point(0, 0);
-	private Point destLoc = new Point(0, 0);
+	private int ySpeed = 0;
 	
 	private String name = "BetaTester";
 	
@@ -52,28 +52,16 @@ public class Player {
 		loc.y=amo;
 	}
 	
-	public int getDestX(){
-		return destLoc.x;
+	public int getYSpeed(){
+		return ySpeed;
 	}
 	
-	public int getDestY(){
-		return destLoc.y;
+	public void addYSpeed(int amount){
+		ySpeed += amount;
 	}
 	
-	public void addDestX(int amo){
-		destLoc.x+=amo;
-	}
-	
-	public void addDestY(int amo){
-		destLoc.y+=amo;
-	}
-	
-	public void setDestX(int amo){
-		destLoc.x=amo;
-	}
-	
-	public void setDestY(int amo){
-		destLoc.y=amo;
+	public void setYSpeed(int amount){
+		ySpeed = amount;
 	}
 	
 	public void killedEnemy(){

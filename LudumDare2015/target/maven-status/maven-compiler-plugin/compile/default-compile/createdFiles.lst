@@ -1,0 +1,9 @@
+com\pokeyone\ludum33\entity\Enemy.class
+com\pokeyone\ludum33\entity\Player.class
+com\pokeyone\ludum33\Game.class
+com\pokeyone\ludum33\shop\ShopItem.class
+com\pokeyone\ludum33\Frame.class
+com\pokeyone\ludum33\entity\Enemy$PowerType.class
+com\pokeyone\ludum33\data\Score.class
+com\pokeyone\ludum33\Game$1.class
+com\pokeyone\ludum33\Game$Gamestate.class
