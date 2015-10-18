@@ -584,7 +584,7 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			tick();
 			repaint();
 			try{
-				Thread.sleep(17);
+				Thread.sleep(15);
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
