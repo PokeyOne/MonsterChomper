@@ -1,4 +1,0 @@
-language: java
-script: 
-  - cd LudumDare2015
-  - mvn -X clean install
