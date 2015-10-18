@@ -14,11 +14,15 @@ import java.awt.event.KeyListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
@@ -68,10 +72,10 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			loadScores();
 			loadStats();
 			
-			imageBackground = new ImageIcon("res/Background.png").getImage();
-			imageButton = new ImageIcon("res/Button.png").getImage();
-			imageButtonSelected = new ImageIcon("res/ButtonSelected.png").getImage();
-			imagePowerUp = new ImageIcon("res/PowerUp.png").getImage();
+			imageBackground = ImageIO.read(new File("res/Background.png"));
+			imageButton = ImageIO.read(new File("res/Button.png"));
+			imageButtonSelected = ImageIO.read(new File("res/ButtonSelected.png"));
+			imagePowerUp = ImageIO.read(new File("res/PowerUp.png"));
 			
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, new File("res/AldotheApache.ttf")));
@@ -79,8 +83,21 @@ public class Game extends JPanel implements Runnable, KeyListener{
 			e.printStackTrace();
 			System.exit(404);
 		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(404);
+			try{
+				GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+				InputStream fontInput = this.getClass().getResourceAsStream("/AldotheApache.ttf");
+				ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, fontInput));
+				
+				imageBackground = ImageIO.read(this.getClass().getResourceAsStream("/Background.png"));
+				imageButton = ImageIO.read(this.getClass().getResourceAsStream("/Button.png"));
+				imageButtonSelected = ImageIO.read(this.getClass().getResourceAsStream("/ButtonSelected.png"));
+				imagePowerUp = ImageIO.read(this.getClass().getResourceAsStream("/PowerUp.png"));
+			}catch(IOException en){
+				en.printStackTrace();
+				System.exit(404);
+			} catch (FontFormatException e1) {
+				e1.printStackTrace();
+			}
 		}catch(FontFormatException e){
 			e.printStackTrace();
 			System.exit(404);
@@ -92,27 +109,53 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	private void loadScores() throws URISyntaxException, IOException{
-		File file = new File("res/scores.save");
-		FileReader fr = new FileReader(file);
-		BufferedReader bfr = new BufferedReader(fr);
-		
-		for(int i = 0; i < 10; i++){
-			String str = bfr.readLine();
-			if(str == null || str == " " || str == "\n" || str == ""){
-				break;
-			}else{
-			}
-			String[] strings = str.split(" ", 2);
+		try{
+			File file = new File("res/scores.save");
+			FileReader fr = new FileReader(file);
+			BufferedReader bfr = new BufferedReader(fr);
 			
-			try{
-				scores[i] = new Score(Integer.valueOf(strings[0]), strings[1]);
-			}catch(NumberFormatException e){
+			for(int i = 0; i < 10; i++){
+				String str = bfr.readLine();
+				if(str == null || str == " " || str == "\n" || str == ""){
+					break;
+				}else{
+				}
+				String[] strings = str.split(" ", 2);
 				
+				try{
+					scores[i] = new Score(Integer.valueOf(strings[0]), strings[1]);
+				}catch(NumberFormatException e){
+					
+				}
+			}
+			
+			bfr.close();
+		}catch(FileNotFoundException e){
+			try{
+				InputStreamReader isr = new InputStreamReader(this.getClass().getResourceAsStream("/scores.save"));
+				BufferedReader bfr = new BufferedReader(isr);
+				
+				for(int i = 0; i < 10; i++){
+					String str = bfr.readLine();
+					if(str == null || str == " " || str == "\n" || str == ""){
+						break;
+					}else{
+					}
+					String[] strings = str.split(" ", 2);
+					
+					try{
+						scores[i] = new Score(Integer.valueOf(strings[0]), strings[1]);
+					}catch(NumberFormatException en){
+						
+					}
+				}
+				
+				bfr.close();
+			}catch(FileNotFoundException en){
+				System.out.println("scores file not found");
+				System.exit(404);
 			}
 		}
-		
-		bfr.close();
-		
 	}
 	
 	private void newScore(String name, int amo){
@@ -138,62 +181,139 @@ public class Game extends JPanel implements Runnable, KeyListener{
 	}
 	
 	private void saveScores() throws IOException, URISyntaxException {
-		File file = new File("res/scores.save");
-		FileWriter fw = new FileWriter(file);
-		BufferedWriter bw = new BufferedWriter(fw);
-		
-		for(int i = 0; i < 10; i++){
-			if(scores[i] != null){
-				String s = scores[i].getSaveString();
-				bw.write(s);
-			}else{
-				System.out.println("scores[" + i + "] = null");
+		try {
+			File file = new File("res/scores.save");
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			for(int i = 0; i < 10; i++){
+				if(scores[i] != null){
+					String s = scores[i].getSaveString();
+					bw.write(s);
+				}else{
+					System.out.println("scores[" + i + "] = null");
+				}
+			}
+			
+			bw.close();
+		} catch (FileNotFoundException e) {
+			try {
+				String path = "res/";
+				File file = new File(path + "scores.save");
+				File file2 = new File(path);
+				file2.mkdirs();
+				FileWriter fw = new FileWriter(file);
+				BufferedWriter bw = new BufferedWriter(fw);
+				
+				for(int i = 0; i < 10; i++){
+					if(scores[i] != null){
+						String s = scores[i].getSaveString();
+						bw.write(s);
+					}else{
+						System.out.println("scores[" + i + "] = null");
+					}
+				}
+				
+				bw.close();
+			} catch (FileNotFoundException en) {
+				System.out.println("severe error, cannot save score board\n\nStack Trace:\n\n");
+				en.printStackTrace();
 			}
 		}
-		
-		bw.close();
 	}
 	
 	public void loadStats() throws URISyntaxException, IOException{
-		File file = new File("res/stats.save");
-		FileReader fr = new FileReader(file);
-		BufferedReader bfr = new BufferedReader(fr);
-		
-		money = Integer.valueOf(bfr.readLine());
-		
-		for(int i = 0; i < shopItems.length; i++){
-			try{
-				shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
-			}catch(NumberFormatException e){
-				System.out.println("couldn't find current amount of " + shopItems[i].getName());
-				shopItems[i].setAmount(0);
+		try{
+			File file = new File("res/stats.save");
+			FileReader fr = new FileReader(file);
+			BufferedReader bfr = new BufferedReader(fr);
+			
+			money = Integer.valueOf(bfr.readLine());
+			
+			for(int i = 0; i < shopItems.length; i++){
+				try{
+					shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
+				}catch(NumberFormatException e){
+					System.out.println("couldn't find current amount of " + shopItems[i].getName());
+					shopItems[i].setAmount(0);
+				}
+				
+				try{
+					shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
+				}catch(NumberFormatException e){
+					System.out.println("couldn't find current price of " + shopItems[i].getName());
+					shopItems[i].setAmount(0);
+				}
 			}
 			
+			bfr.close();
+		}catch(FileNotFoundException e){
 			try{
-				shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
-			}catch(NumberFormatException e){
-				System.out.println("couldn't find current price of " + shopItems[i].getName());
-				shopItems[i].setAmount(0);
+				InputStreamReader isr = new InputStreamReader(this.getClass().getResourceAsStream("/stats.save"));
+				BufferedReader bfr = new BufferedReader(isr);
+				
+				money = Integer.valueOf(bfr.readLine());
+				
+				for(int i = 0; i < shopItems.length; i++){
+					try{
+						shopItems[i].setAmount(Integer.valueOf(bfr.readLine()));
+					}catch(NumberFormatException en){
+						System.out.println("couldn't find current amount of " + shopItems[i].getName());
+						shopItems[i].setAmount(0);
+					}
+					
+					try{
+						shopItems[i].setPrice(Integer.valueOf(bfr.readLine()));
+					}catch(NumberFormatException en){
+						System.out.println("couldn't find current price of " + shopItems[i].getName());
+						shopItems[i].setAmount(0);
+					}
+				}
+				
+				bfr.close();
+			}catch(FileNotFoundException en){
+				System.out.println("stats not found");
+				System.exit(404);
 			}
 		}
-		
-		bfr.close();
-		
 	}
 	
 	public void saveStats() throws IOException, URISyntaxException {
-		File file = new File("res/stats.save");
-		FileWriter fw = new FileWriter(file);
-		BufferedWriter bw = new BufferedWriter(fw);
-		
-		bw.write(money + "\n");
-		
-		for(int i = 0; i < shopItems.length; i++){
-			bw.write(shopItems[i].getAmount() + "\n");
-			bw.write(shopItems[i].getPrice() + "\n");
+		try{
+			File file = new File("res/stats.save");
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
+			
+			bw.write(money + "\n");
+			
+			for(int i = 0; i < shopItems.length; i++){
+				bw.write(shopItems[i].getAmount() + "\n");
+				bw.write(shopItems[i].getPrice() + "\n");
+			}
+			
+			bw.close();
+		}catch(FileNotFoundException e){
+			try{
+				String path = "res/";
+				File file = new File(path + "stats.save");
+				File file2 = new File(path);
+				file2.mkdirs();
+				FileWriter fw = new FileWriter(file);
+				BufferedWriter bw = new BufferedWriter(fw);
+				
+				bw.write(money + "\n");
+				
+				for(int i = 0; i < shopItems.length; i++){
+					bw.write(shopItems[i].getAmount() + "\n");
+					bw.write(shopItems[i].getPrice() + "\n");
+				}
+				
+				bw.close();
+			}catch(FileNotFoundException en){
+				System.out.println("severe error, cannot save stats\n\nStack Trace:\n\n");
+				en.printStackTrace();
+			}
 		}
-		
-		bw.close();
 	}
 	
 	public void exit(){

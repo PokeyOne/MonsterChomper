@@ -5,6 +5,9 @@
   <version>1.1</version>
   <name>Monster Chomper</name>
   <description>Jump over the monsters while comparing numbers</description>
+  
+  
+  
   <build>
     <sourceDirectory>src</sourceDirectory>
     <resources>
@@ -27,7 +30,7 @@
               <addClasspath>true</addClasspath>
             </manifest>
             <manifestEntries>
-              <key>Main-Class: com.pokeyone.ludum33.Frame</key>
+              <Main-Class>com.pokeyone.ludum33.Frame</Main-Class>
             </manifestEntries>
           </archive>
         </configuration>
